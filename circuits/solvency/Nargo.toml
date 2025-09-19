@@ -1,0 +1,7 @@
+[package]
+name = "solvency"
+version = "0.1.0"
+type = "bin"
+
+[dependencies]
+common = { path = "../common" }

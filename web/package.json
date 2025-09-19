@@ -1,0 +1,16 @@
+{
+  "name": "web",
+  "private": true,
+  "scripts": {
+    "dev": "next dev"
+  },
+  "dependencies": {
+    "next": "14.2.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "viem": "^2.9.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.1.13"
+  }
+}

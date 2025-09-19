@@ -1,0 +1,39 @@
+# Node modules
+node_modules/
+
+# environments files
+.env
+.env.local
+.env.development.local
+.env.production.local
+
+# next.js build output
+.next/
+
+# pnpm-lock.yaml or yarn.lock if applicable
+# pnpm-lock.yaml
+
+# Logs
+*.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store # macOS specific
+Thumb.db # Windows specific
+
+# IDE files (e.g., VS Code)
+.vscode/
+
+# coverage reports, test results
+coverage/
+
+# You can add other build outputs or temporary files here
+# dist/
+# build/
+
+# specific to your previous outputs
+temp_file_*.txt
+
