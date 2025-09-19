@@ -16,11 +16,16 @@ export function getClients(){
 
 export async function recordAttest(attId: Hex, orderHash: Hex){
   const { client, registry } = getClients();
-  return client.writeContract({ ...registry, functionName: 'record', args: [attId, orderHash] });
+  try {
+    return await client.writeContract({ ...registry, functionName: 'record', args: [attId, orderHash], chain: undefined });
+  } catch (e) {
+    console.error('recordAttest failed', { attId, orderHash, err: e });
+    throw e;
+  }
 }
 
 export async function settle(args:{orderHash:Hex, atts:Record<string,Hex>, maker:Hex, taker:Hex, base:Hex, quote:Hex, size:bigint, price:bigint}){
   const { client, settle } = getClients();
   const {orderHash,atts,maker,taker,base,quote,size,price} = args;
-  return client.writeContract({ ...settle, functionName:'settleRFQ', args:[orderHash, atts['solvency'], atts['kyc'], atts['whitelist'], (atts['bestexec']||'0x0000000000000000000000000000000000000000000000000000000000000000') as Hex, maker, taker, base, quote, size, price] });
+  return client.writeContract({ ...settle, functionName:'settleRFQ', args:[orderHash, atts['solvency'], atts['kyc'], atts['whitelist'], (atts['bestexec']||'0x0000000000000000000000000000000000000000000000000000000000000000') as Hex, maker, taker, base, quote, size, price], chain: undefined });
 }

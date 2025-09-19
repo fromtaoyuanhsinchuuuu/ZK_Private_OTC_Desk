@@ -63,10 +63,17 @@ app.post('/prove-and-attest', async (req: any, res: any)=>{
   const oh = o.orderHash as `0x${string}`;
   const atts: AttMap = {};
   try {
-    for (const circuit of ['solvency','kyc','whitelist'] as const){
-      const pub = publicInputs?.[circuit];
+    // If attestations already exist for this RFQ, return them (idempotent)
+    if (o.atts && Object.keys(o.atts).length) {
+      o.status = 'OPEN';
+      return res.json({ rfqId, orderHash: oh, status: o.status, attestation: o.atts, onchainRecorded: true });
+    }
+      for (const circuit of ['solvency','kyc','whitelist'] as const){
+        const pub = publicInputs?.[circuit];
       if (!pub) return res.status(400).json({ error: `missing public input for ${circuit}` });
-      const verificationId = await submitProof(circuit, pub);
+        // Ensure attestations are unique per order by binding orderHash when deriving the ID
+        const boundPub = { ...(pub as any), order_hash: (pub as any)?.order_hash ?? oh, rfq_id: rfqId };
+        const verificationId = await submitProof(circuit, boundPub);
       const attId = verificationId as `0x${string}`;
       atts[circuit] = attId;
     }
