@@ -19,6 +19,7 @@ export default function Settle(){
   const [taker, setTaker] = useState<string>('');
   const [pairOverride, setPairOverride] = useState<{base?: string; quote?: string}>({});
   const [envMsg, setEnvMsg] = useState<string>('');
+  function copy(text?: string){ if (!text) return; navigator.clipboard?.writeText(text); }
 
 
   useEffect(() => {
@@ -128,6 +129,10 @@ export default function Settle(){
         <div style={{marginBottom:4}}>
           <div>Maker: <code>{cfg.maker}</code></div>
           <div>Taker: <code>{cfg.taker}</code></div>
+          <div style={{display:'flex', alignItems:'center', gap:8}}>
+            <div>Registry: <code>{cfg.registry}</code></div>
+            <button onClick={()=>copy(cfg.registry)}>Copy REG</button>
+          </div>
         </div>
       )}
       <div style={{display:'flex', gap:8, alignItems:'center'}}>
@@ -226,8 +231,10 @@ export default function Settle(){
           <pre>{JSON.stringify(tx,null,2)}</pre>
           {tx.txHash && (
             <div style={{marginTop:8}}>
-              <div>txHash: <code>{tx.txHash}</code></div>
-              <button onClick={()=> navigator.clipboard?.writeText(tx.txHash)}>Copy txHash</button>
+              <div style={{display:'flex', alignItems:'center', gap:8}}>
+                <div>txHash: <code>{tx.txHash}</code></div>
+                <button onClick={()=> copy(tx.txHash)}>Copy TX</button>
+              </div>
               <div style={{marginTop:8}}>
                 <b>Quick logs:</b>
                 <pre style={{whiteSpace:'pre-wrap'}}>
@@ -237,6 +244,29 @@ cast tx {tx.txHash}
                 <div style={{fontSize:12,color:'#666'}}>Run in your Foundry shell; txHash matches the one printed by the offchain server.</div>
               </div>
               <div style={{fontSize:12, color:'#666'}}>This txHash should match the one printed in the offchain terminal.</div>
+              {/* Quick exports so you can paste into shell */}
+              {meta?.orderHash && (
+                <div style={{marginTop:8}}>
+                  <b>Quick exports</b>
+                  <pre style={{whiteSpace:'pre-wrap'}}>{[
+                    `export RPC=${process.env.NEXT_PUBLIC_RPC_URL || 'http://127.0.0.1:8545'}`,
+                    cfg?.registry ? `export REG=${cfg.registry}` : '# export REG=<registry>' ,
+                    `export TX=${tx.txHash}`,
+                    `export ORDER=${meta.orderHash}`,
+                    meta?.atts ? `export ATTEST=${meta.atts?.solvency || meta.atts?.kyc || meta.atts?.whitelist || ''}` : '# export ATTEST=<attestationId>'
+                  ].join('\n')}</pre>
+                  <button onClick={()=>{
+                    const text = [
+                      `export RPC=${process.env.NEXT_PUBLIC_RPC_URL || 'http://127.0.0.1:8545'}`,
+                      cfg?.registry ? `export REG=${cfg.registry}` : '',
+                      `export TX=${tx.txHash}`,
+                      `export ORDER=${meta?.orderHash || ''}`,
+                      meta?.atts ? `export ATTEST=${meta.atts?.solvency || meta.atts?.kyc || meta.atts?.whitelist || ''}` : '',
+                    ].filter(Boolean).join('\n');
+                    copy(text);
+                  }}>Copy exports</button>
+                </div>
+              )}
             </div>
           )}
         </div>

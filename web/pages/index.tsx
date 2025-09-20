@@ -8,6 +8,7 @@ import { DEFAULT_ETHM_ADDR, DEFAULT_USDC_ADDR } from '../lib/addresses';
 export default function Home(){
   const [rfq, setRfq] = useState<any>(null);
   const [showAdv, setShowAdv] = useState(false);
+  const [cfg, setCfg] = useState<any>(null);
   const [order, setOrder] = useState({
     maker: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
     base: '',
@@ -25,6 +26,7 @@ export default function Home(){
       try {
         const r = await fetch(`${process.env.NEXT_PUBLIC_OFFCHAIN_URL || 'http://localhost:8080'}/config`);
         const c = await r.json();
+        setCfg(c);
         const next = { ...order } as any;
         if (c?.maker) next.maker = c.maker;
         // Fixed pair convention: base=ETHm, quote=USDC
@@ -83,6 +85,8 @@ export default function Home(){
     }
   }
 
+  function copy(text?: string){ if (!text) return; navigator.clipboard?.writeText(text); }
+
   return (
     <main style={{padding:20}}>
       <h1>ZK-Private OTC — Noir MVP</h1>
@@ -109,15 +113,53 @@ export default function Home(){
         </div>
         {showAdv && (
           <div style={{marginTop:8,border:'1px dashed #999',padding:8}}>
-            <div>orderHash: {rfq.orderHash}</div>
+            <div style={{display:'flex', alignItems:'center', gap:8}}>
+              <div>orderHash: {rfq.orderHash}</div>
+              <button onClick={()=>copy(rfq.orderHash)}>Copy ORDER_HASH</button>
+            </div>
             <div style={{marginTop:6}}>
               <b>Tokens</b>
               <div>Base (ETHm): <code>{order.base || DEFAULT_ETHM_ADDR}</code></div>
               <div>Quote (USDC): <code>{order.quote || DEFAULT_USDC_ADDR}</code></div>
             </div>
+            {cfg?.registry && (
+              <div style={{marginTop:6, display:'flex', alignItems:'center', gap:8}}>
+                <div>Registry: <code>{cfg.registry}</code></div>
+                <button onClick={()=>copy(cfg.registry)}>Copy REG</button>
+              </div>
+            )}
             {rfq.attestation && <>
               <h3>Attestations</h3>
-              <pre>{JSON.stringify(rfq.attestation,null,2)}</pre>
+              <div>
+                {Object.entries(rfq.attestation).map(([k,v]: any) => (
+                  <div key={k} style={{display:'flex', alignItems:'center', gap:8}}>
+                    <code>{k}:</code>
+                    <code>{String(v)}</code>
+                    <button onClick={()=>copy(String(v))}>Copy ATTEST ({k})</button>
+                  </div>
+                ))}
+              </div>
+              <pre style={{marginTop:8}}>{JSON.stringify(rfq.attestation,null,2)}</pre>
+              {/* Quick exports for shell */}
+              <div style={{marginTop:8}}>
+                <b>Quick exports</b>
+                <pre style={{whiteSpace:'pre-wrap'}}>{[
+                  `export RPC=${process.env.NEXT_PUBLIC_RPC_URL || 'http://127.0.0.1:8545'}`,
+                  cfg?.registry ? `export REG=${cfg.registry}` : '# export REG=<registry>' ,
+                  `export ORDER=${rfq.orderHash}`,
+                  `export ATTEST=${rfq.attestation?.solvency || rfq.attestation?.kyc || rfq.attestation?.whitelist || ''}`,
+                  '# Note: TX will be available after Settle on the B page',
+                ].join('\n')}</pre>
+                <button onClick={()=>{
+                  const text = [
+                    `export RPC=${process.env.NEXT_PUBLIC_RPC_URL || 'http://127.0.0.1:8545'}`,
+                    cfg?.registry ? `export REG=${cfg.registry}` : '',
+                    `export ORDER=${rfq.orderHash}`,
+                    `export ATTEST=${rfq.attestation?.solvency || rfq.attestation?.kyc || rfq.attestation?.whitelist || ''}`,
+                  ].filter(Boolean).join('\n');
+                  copy(text);
+                }}>Copy exports</button>
+              </div>
             </>}
           </div>
         )}
