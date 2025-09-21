@@ -133,6 +133,10 @@ export default function Settle(){
             <div>Registry: <code>{cfg.registry}</code></div>
             <button onClick={()=>copy(cfg.registry)}>Copy REG</button>
           </div>
+          <div style={{display:'flex', alignItems:'center', gap:8}}>
+            <div>Settlement: <code>{cfg.settlement}</code></div>
+            <button onClick={()=>copy(cfg.settlement)}>Copy SETTLE</button>
+          </div>
         </div>
       )}
       <div style={{display:'flex', gap:8, alignItems:'center'}}>
@@ -251,6 +255,7 @@ cast tx {tx.txHash}
                   <pre style={{whiteSpace:'pre-wrap'}}>{[
                     `export RPC=${process.env.NEXT_PUBLIC_RPC_URL || 'http://127.0.0.1:8545'}`,
                     cfg?.registry ? `export REG=${cfg.registry}` : '# export REG=<registry>' ,
+                    cfg?.settlement ? `export SETTLE=${cfg.settlement}` : '# export SETTLE=<settlement>' ,
                     `export TX=${tx.txHash}`,
                     `export ORDER=${meta.orderHash}`,
                     meta?.atts ? `export ATTEST=${meta.atts?.solvency || meta.atts?.kyc || meta.atts?.whitelist || ''}` : '# export ATTEST=<attestationId>'
@@ -259,6 +264,7 @@ cast tx {tx.txHash}
                     const text = [
                       `export RPC=${process.env.NEXT_PUBLIC_RPC_URL || 'http://127.0.0.1:8545'}`,
                       cfg?.registry ? `export REG=${cfg.registry}` : '',
+                      cfg?.settlement ? `export SETTLE=${cfg.settlement}` : '',
                       `export TX=${tx.txHash}`,
                       `export ORDER=${meta?.orderHash || ''}`,
                       meta?.atts ? `export ATTEST=${meta.atts?.solvency || meta.atts?.kyc || meta.atts?.whitelist || ''}` : '',
