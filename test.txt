@@ -1,4 +1,4 @@
-# === 先設定變數（把右邊的值換成你頁面上的 0x… 字串） ===
+# === Set variables (replace with your own 0x… values if needed) ===
 export RPC=http://127.0.0.1:8545
 export SETTLE=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
 export REG=0x5FbDB2315678afecb367f032d93F642f64180aa3
@@ -6,15 +6,28 @@ export TX=0x7bb2a5bc04ca1c267a56e27744fafacbdcd864531ff9e44883b3b5b41c8b51bb
 export ORDER=0x0c41f2634a3ff1ba00b8940910cfd289a3ef696080a0e232392ccf7558700dfd
 export ATTEST=0x027477bd4384d035bca7c69a358d24123549b1f40335a5ee5b875e004d8b7262
 
-# 檢查長度是否正確（應該 42/66/66/66）
+# Sanity check: expected lengths are 42/66/66/66
 echo ${#SETTLE} ${#TX} ${#ORDER} ${#ATTEST}
 
-# 1 查交易收據（應該看到 status: 0x1）
+# 1) Check transaction receipt (expect status: 0x1)
 cast receipt $TX --rpc-url $RPC
 
-# 2 這張單是否已用過（應該回 true）
+# 2) Anti-replay flag for this order (should return true)
 cast call $SETTLE "usedOrder(bytes32)(bool)" $ORDER --rpc-url $RPC
 
-# 3 這張 attestation 是否綁到該 orderHash（應該回跟 $ORDER 一樣）
+# 3) Attestation is bound to the orderHash (should equal $ORDER)
 cast call $REG "subjectOf(bytes32)(bytes32)" $ATTEST --rpc-url $RPC
+
+# 3b) Registry.isValid(attestationId, orderHash) (should return true)
+cast call $REG "isValid(bytes32,bytes32)(bool)" $ATTEST $ORDER --rpc-url $RPC
+
+# 4) (optional) Find the Settled event for this order
+cast logs --rpc-url $RPC \
+	--address $SETTLE --from-block 0 \
+	"Settled(bytes32,address,address,address,address,uint256,uint256)" $ORDER
+
+# 5) (optional) If your Registry emits a Recorded(attId, subject) event, you can query it like this:
+# cast logs --rpc-url $RPC \
+#   --address $REG --from-block 0 \
+#   "Recorded(bytes32,bytes32)" $ATTEST
 
