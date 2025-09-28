@@ -68,6 +68,12 @@ pnpm -w --filter web dev
 
 Visit the web app and follow the flow described in the task.
 
+### Demo mode vs on-chain settlement
+
+- When `ALLOW_DEMO_UNVERIFIED_SIGNATURES=true` (the default demo setup), the offchain server automatically skips real on-chain settlement and returns a placeholder transaction hash. This keeps the flow working even without funded tokens or a configured signer.
+- To exercise the full on-chain path, unset `ALLOW_DEMO_UNVERIFIED_SIGNATURES` (or set it to `false`), configure the required RPC/signing environment variables, and optionally set `SKIP_ONCHAIN=false` to force settlement and attestation recording transactions.
+- You can still opt out of transactions explicitly via `SKIP_ONCHAIN=true`, which overrides all other flags.
+
 ## Tips
 
 - Start anvil with EON Gobi chain id for easier future migration:
